@@ -10,7 +10,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     steps:
       - name: Checkout code
@@ -19,7 +19,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: '20.17.0'
 
       - name: Install dependencies
         run: npm install
@@ -27,5 +27,6 @@ jobs:
       - name: Run tests
         run: npm test
 
-      # Add deployment steps here, if needed
-      # For example, deploying to Render
+      - name: Deploy to Render
+        run: |
+          curl -X POST 'https://api.render.com/deploy/srv-creflrggph6c73erqf7g?key=${{ secrets.apiKey }}'
