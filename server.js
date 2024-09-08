@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const app = require('./index'); // Import the app from index.js
 
-const PORT = process.env.PORT || 3001;
+const PORT = process.env.PORT || 3002;
 const dbURI = process.env.MONGO_URI;
 
 const startServer = async () => {
