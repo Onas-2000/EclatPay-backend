@@ -2,6 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
+const jwtSecret = process.env.JWT_SECRET
 
 
 const registerUserController = async (req, res) => {
