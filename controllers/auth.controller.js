@@ -2,8 +2,7 @@ const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
 const jwt = require('jsonwebtoken');
-const jwtSecret = process.env.JWT_SECRET
-
+const jwtSecret = process.env.JWT_SECRET;
 
 const registerUserController = async (req, res) => {
   const { email, password } = req.body;
@@ -18,7 +17,7 @@ const registerUserController = async (req, res) => {
     // Create new user and hash the password
     user = new User({
       email,
-      password: await bcrypt.hash(password, 10), // Extract 10 to an env variable if needed
+      password: await bcrypt.hash(password, 10), // Hash the password
     });
 
     // Save the user to the database
@@ -34,13 +33,13 @@ const registerUserController = async (req, res) => {
     });
 
     const mailOptions = {
-      from: process.env.EMAIL_USER || 'exploblog111@gmail.com', // Better to use env variable
+      from: process.env.EMAIL_USER || 'exploblog111@gmail.com', // Use env variable
       to: email,
       subject: 'Welcome to Eclatpay',
       text: 'Thank you for signing up!',
     };
 
-    // Email sending logic
+    // Send email notification
     try {
       const info = await transporter.sendMail(mailOptions);
       if (process.env.NODE_ENV !== 'test') {
@@ -48,18 +47,33 @@ const registerUserController = async (req, res) => {
       }
     } catch (error) {
       console.error('Error sending email:', error.message);
-      // Optionally, notify the user that registration succeeded but email failed
+      // Notify that registration succeeded but email sending failed
       return res.status(201).json({
         msg: 'User registered successfully, but email sending failed.',
-        emailError: error.message, // You can remove this in production
+        emailError: error.message, // Remove this in production if necessary
       });
     }
 
-    // Successful response if everything went fine
-    return res.status(201).json({ msg: 'User registered successfully, an email has been sent.' });
+    // Generate JWT Token
+    const payload = { user: { id: user.id } };
+
+    jwt.sign(
+      payload,
+      jwtSecret, // Use the secret from the .env file
+      { expiresIn: '1h' }, // Token expires in 1 hour
+      (err, token) => {
+        if (err) throw err;
+
+        // Send the token to the frontend with the success message
+        return res.status(201).json({
+          msg: 'User registered successfully, an email has been sent.',
+          token,
+        });
+      }
+    );
   } catch (err) {
     console.error('Server error:', err.message);
-    return res.status(500).json({ msg: 'Server error' }); // Consistent JSON error message
+    return res.status(500).json({ msg: 'Server error' });
   }
 };
 
